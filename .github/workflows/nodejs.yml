@@ -3,22 +3,26 @@ name: Node.js CI
 on: [push]
 
 jobs:
-  build:
+    build:
+        runs-on: ubuntu-latest
 
-    runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [12.x]
 
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: npm run build --if-present
-    - run: npm test
-      env:
-        CI: true
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v1
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm install
+            - run: npm run build --if-present
+            - run: npm test
+              env:
+                  CI: true
+                  DB_TEST_URL: ${{ secrets.DB_TEST_URL }}
+                  DB_TEST_SSL: ${{ secrets.DB_TEST_SSL }}
+                  SECRET: ${{ secrets.SECRET }}
+                  MAIL_KEY: ${{ secrets.MAIL_KEY }}
+                  MAIL_DOMAIN: ${{ secrets.MAIL_DOMAIN }}

@@ -8,11 +8,11 @@ module.exports = {
 	// print semicolons at the ends of statements
 	semi: true,
 	// use single quotes instead of double quotes
-	singleQuote: false,
+	singleQuote: true,
 	// print trailing commas wherever possible when multi-line
-	trailingComma: "all",
+	trailingComma: 'all',
 	// print spaces between brackets in object literals
 	bracketSpacing: true,
 	// include parentheses around a sole arrow function parameter.
-	arrowParens: "avoid",
+	arrowParens: 'avoid',
 };
