@@ -1,11 +1,12 @@
-import fs from "fs";
-import path from "path";
-import { Request, Response } from "express";
-import * as jwt from "jsonwebtoken";
-import { getRepository, Repository } from "typeorm";
-import { validate, ValidationError } from "class-validator";
-import passport from "passport";
-import { User } from "../entity/User";
+import fs from 'fs';
+import path from 'path';
+import { Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import { getRepository, Repository } from 'typeorm';
+import { validate, ValidationError } from 'class-validator';
+import passport from 'passport';
+import { User } from '../entity/User';
+import { SendMail, Mail } from '../services/mailGunService';
 
 class AuthController {
 	/**
@@ -33,7 +34,7 @@ class AuthController {
 	 */
 
 	static signup = async (req: Request, res: Response): Promise<void> => {
-		console.log("SIGN UP");
+		console.log('SIGN UP');
 		const { nickname, password, email } = req.body;
 
 		const user: User = new User();
@@ -52,18 +53,27 @@ class AuthController {
 		try {
 			const userRepository: Repository<User> = getRepository(User);
 			await userRepository.save(user);
-			console.log("User created");
+			console.log('User created');
 			console.log(user);
+
+			const data: Mail = {
+				from: 'eBet <eBet@eBet.org>',
+				to: user.email,
+				subject: 'Subscription',
+				text: `Congratulations ${user.nickname}, you are now registered to MyS3!`,
+			};
+
+			SendMail(data);
 
 			const userPath: string = path.join(
 				__dirname,
-				"../../myS3DATA",
+				'../../myS3DATA',
 				user.uuid.toString(),
 			);
 			console.log(userPath);
 			if (!fs.existsSync(userPath)) {
 				fs.mkdir(userPath, () => {
-					console.log("bucke created");
+					console.log('bucke created');
 				});
 				// fs.mkdir(userPath, {recursive: true}, err => {})
 			}
@@ -108,10 +118,10 @@ class AuthController {
 		req: Request,
 		res: Response,
 	): Promise<Response | void> => {
-		console.log("#SIGN IN");
+		console.log('#SIGN IN');
 
 		passport.authenticate(
-			"local",
+			'local',
 			{ session: false },
 			async (err, user: User) => {
 				if (err) {

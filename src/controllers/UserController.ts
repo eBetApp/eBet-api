@@ -1,7 +1,8 @@
-import { getRepository, Repository } from "typeorm";
-import { Request, Response } from "express";
-import { User } from "../entity/User";
-import { validate, ValidationError } from "class-validator";
+import { getRepository, Repository } from 'typeorm';
+import { Request, Response } from 'express';
+import { User } from '../entity/User';
+import { validate, ValidationError } from 'class-validator';
+import { SendMail, Mail } from '../services/mailGunService';
 
 export default class UserController {
 	/**
@@ -34,7 +35,7 @@ export default class UserController {
 		request: Request,
 		response: Response,
 	): Promise<void> => {
-		console.log("Route ALL is called");
+		console.log('Route ALL is called');
 		const userRepository: Repository<User> = getRepository(User);
 		userRepository
 			.find()
@@ -82,7 +83,7 @@ export default class UserController {
 		request: Request,
 		response: Response,
 	): Promise<void> => {
-		console.log("Route ONE is called");
+		console.log('Route ONE is called');
 		const userRepository: Repository<User> = getRepository(User);
 		userRepository
 			.findOne(request.params.id)
@@ -132,7 +133,7 @@ export default class UserController {
 		request: Request,
 		response: Response,
 	): Promise<void> => {
-		console.log("Route DELETE is called");
+		console.log('Route DELETE is called');
 		const userRepository: Repository<User> = getRepository(User);
 		userRepository
 			.findOne(request.params.id)
@@ -143,6 +144,14 @@ export default class UserController {
 					.remove(userToRemove!)
 					.then(result => {
 						response.status(200).send(result);
+						const data: Mail = {
+							from: 'eBet <eBet@eBet.org>',
+							to: userToRemove.email,
+							subject: 'Unsubscription',
+							text: `Hey ${userToRemove.nickname}! We are worried to confirm that your account has been successfully deleted. We hope to see you back soon!`,
+						};
+
+						SendMail(data);
 					})
 					.catch(err => {
 						// Should never occure
@@ -204,14 +213,14 @@ export default class UserController {
 		request: Request,
 		response: Response,
 	): Promise<void> => {
-		console.log("Route UPDATE is called");
+		console.log('Route UPDATE is called');
 
 		const { id, nickname, email } = request.body;
 
 		const userRepository: Repository<User> = getRepository(User);
 
 		const userToUpdate: User = new User();
-		userToUpdate.password = "password"; // fake, only to pass validation
+		userToUpdate.password = 'password'; // fake, only to pass validation
 		userToUpdate.nickname = nickname;
 		userToUpdate.email = email;
 

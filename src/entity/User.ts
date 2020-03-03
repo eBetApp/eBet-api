@@ -1,6 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
-import { Length, IsNotEmpty, IsEmail } from "class-validator";
-import * as bcrypt from "bcryptjs";
+import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
+import { Length, IsNotEmpty, IsEmail } from 'class-validator';
+import * as bcrypt from 'bcryptjs';
 
 /**
  * @swagger
@@ -23,7 +23,7 @@ import * as bcrypt from "bcryptjs";
  *            type: string
  *            format: min. 4 characters
  *        example:
- *           name: Bob
+ *           nickname: Bob
  *           email: bob@gmail.com
  *           password: bob1
  *      ResponseUserRegistered:
@@ -61,21 +61,21 @@ import * as bcrypt from "bcryptjs";
  */
 
 @Entity()
-@Unique(["nickname"])
+@Unique(['nickname'])
 export class User {
-	@PrimaryGeneratedColumn("uuid")
+	@PrimaryGeneratedColumn('uuid')
 	uuid!: string;
 
-	@Column("text", { nullable: true })
+	@Column('text', { nullable: true })
 	@IsNotEmpty()
 	nickname!: string;
 
-	@Column("text", { nullable: true })
+	@Column('text', { nullable: true })
 	@IsNotEmpty()
 	@IsEmail()
 	email!: string;
 
-	@Column("text", { nullable: true })
+	@Column('text', { nullable: true })
 	@Length(4, 20)
 	@IsNotEmpty()
 	password!: string;
