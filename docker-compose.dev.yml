@@ -1,0 +1,33 @@
+version: '3'
+
+volumes:
+    postgres_data_local: {}
+
+services:
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile.dev
+        ports:
+            - '3001:3000'
+        links:
+            - db
+        command: ['yarn', 'dev']
+        environment:
+            DB_DEV_URL: postgres://username:pgpassword@db:5432/mydatabase
+            DB_TEST_URL: postgres://username:pgpassword@db:5432/mydatabase
+            SECRET: ${SECRET}
+            MAIL_KEY: ${MAIL_KEY}
+            MAIL_DOMAIN: ${MAIL_DOMAIN}
+        volumes:
+            - ./:/app
+    db:
+        image: postgres:11.6-alpine
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data_local:/var/lib/postgresql/data
+        environment:
+            POSTGRES_DB: mydatabase
+            POSTGRES_USER: username
+            POSTGRES_PASSWORD: pgpassword

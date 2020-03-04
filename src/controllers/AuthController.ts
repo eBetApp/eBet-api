@@ -7,6 +7,7 @@ import { validate, ValidationError } from 'class-validator';
 import passport from 'passport';
 import { User } from '../entity/User';
 import { SendMail, Mail } from '../services/mailGunService';
+import { signupService } from '../services/userAuthServices';
 
 class AuthController {
 	/**
@@ -33,60 +34,13 @@ class AuthController {
 	 *          description: Incorrect input data - User not created
 	 */
 
-	static signup = async (req: Request, res: Response): Promise<void> => {
-		console.log('SIGN UP');
+	static signup = async (req: Request, res: Response): Promise<Response> => {
 		const { nickname, password, email } = req.body;
-
-		const user: User = new User();
-		user.nickname = nickname;
-		user.password = password;
-		user.email = email;
-
-		const errors: ValidationError[] = await validate(user);
-		if (errors.length > 0) {
-			res.status(400).send(errors);
-			return;
-		}
-
-		user.hashPassword();
-
 		try {
-			const userRepository: Repository<User> = getRepository(User);
-			await userRepository.save(user);
-			console.log('User created');
-			console.log(user);
-
-			const data: Mail = {
-				from: 'eBet <eBet@eBet.org>',
-				to: user.email,
-				subject: 'Subscription',
-				text: `Congratulations ${user.nickname}, you are now registered to MyS3!`,
-			};
-
-			SendMail(data);
-
-			const userPath: string = path.join(
-				__dirname,
-				'../../myS3DATA',
-				user.uuid.toString(),
-			);
-			console.log(userPath);
-			if (!fs.existsSync(userPath)) {
-				fs.mkdir(userPath, () => {
-					console.log('bucke created');
-				});
-				// fs.mkdir(userPath, {recursive: true}, err => {})
-			}
-
-			const payload = { id: user.uuid, nickname, email };
-			const token: string = jwt.sign(
-				payload,
-				process.env.SECRET as string,
-			);
-
-			res.status(201).json({ data: { user }, meta: { token } });
+			const result = await signupService(nickname, password, email);
+			return res.status(result.status).json(result);
 		} catch (error) {
-			res.status(400).json({ error: error.message });
+			return res.status(error.status).send(error.err);
 		}
 	};
 
@@ -114,6 +68,8 @@ class AuthController {
 	 *        "400":
 	 *          description: Incorrect input data - User not logged
 	 */
+
+	// TODO: create service to use also graphQL
 	static signin = async (
 		req: Request,
 		res: Response,

@@ -4,6 +4,7 @@ import { User } from '../entity/User';
 import { validate, ValidationError } from 'class-validator';
 import { SendMail, Mail } from '../services/mailGunService';
 
+// TODO : create services to use graphQL also
 export default class UserController {
 	/**
 	 * @swagger

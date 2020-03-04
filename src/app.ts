@@ -6,6 +6,9 @@ import Routes from './routes';
 import './middlewares/passport';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import { ApolloServer } from 'apollo-server-express';
+import { typeDefs } from './graphQl/typeDefs';
+import { resolvers } from './graphQl/resolvers';
 
 const app: Express = express();
 
@@ -23,18 +26,8 @@ const options = {
 	swaggerDefinition: {
 		openapi: '3.0.0',
 		info: {
-			title: 'API My S3 - Documentation',
+			title: 'API eBet - Documentation',
 			version: '1.0.0',
-			description: 'An api project based on main AWS S3 concepts',
-			// license: {
-			//   name: "MIT",
-			//   url: "https://choosealicense.com/licenses/mit/"
-			// },
-			// contact: {
-			//   name: "Swagger",
-			//   url: "https://swagger.io",
-			//   email: "Info@SmartBear.com"
-			// }
 		},
 		servers: [
 			{
@@ -49,12 +42,16 @@ const options = {
 	],
 };
 const specs = swaggerJsdoc(options);
-app.use('/docs', swaggerUi.serve);
+app.use('/doc', swaggerUi.serve);
 app.get(
-	'/docs',
+	'/doc',
 	swaggerUi.setup(specs, {
 		explorer: true,
 	}),
 );
+
+// GraphQL startup
+const server = new ApolloServer({ typeDefs, resolvers });
+server.applyMiddleware({ app });
 
 export default app;
