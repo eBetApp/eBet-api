@@ -5,7 +5,7 @@
 	"main": "main.ts",
 	"scripts": {
 		"test:static": "tsc",
-		"test:unit": "jest --config=.jestrc.js --maxWorkers 2",
+		"test:unit": "jest --config=.jestrc.js",
 		"test": "npm run test:static && npm run test:unit",
 		"lint": "eslint src/*.ts* src/**/*.ts*",
 		"lintfix": "eslint src/*.ts* src/**/*.ts* --fix",
