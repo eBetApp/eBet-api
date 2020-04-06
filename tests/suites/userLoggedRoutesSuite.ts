@@ -6,9 +6,9 @@ const userLoggedRoutesSuite = (server: supertest.SuperTest<supertest.Test>) =>
 	describe('User routes', () => {
 		// Create users to test user's routes
 		const userToBeDeleted: User = new User();
-		userToBeDeleted.nickname = 'Bob11';
-		userToBeDeleted.password = 'bob11';
-		userToBeDeleted.email = 'bob11@gmail.com';
+		userToBeDeleted.nickname = 'Bob1';
+		userToBeDeleted.password = 'bob1';
+		userToBeDeleted.email = 'bob1@gmail.com';
 
 		const permanentUser: User = new User();
 		permanentUser.nickname = 'Bob2';
