@@ -18,37 +18,6 @@ const authRoutesSuite = (server: supertest.SuperTest<supertest.Test>) =>
 				expect(res.status).toBe(201);
 				done();
 			});
-			it('GRAPHQL_Sign Up with correct data should return 200 and body should contains a User', async done => {
-				const query = `mutation {
-        signUp(nickname: "bobi22", email: "bob@gmail.com", password: "boob1")
-        {uuid, nickname, email, password}
-      }`;
-				const res: request.Response = await server
-					.post('/graphql')
-					.set('Accept', 'application/json')
-					.send({ query });
-				expect(res.status).toBe(200);
-				expect(res.body.data).toBeDefined();
-				expect(res.body.errors).toBeUndefined();
-				done();
-			});
-			it('GRAPHQL_Sign Up with an already used nickname should return 200 AND body should contains errors', async done => {
-				const query = `mutation {
-        signUp(nickname: "bobi22", email: "bob@gmail.com", password: "boob1")
-        {uuid, nickname, email, password}
-      }`;
-				const res: request.Response = await server
-					.post('/graphql')
-					.set('Accept', 'application/json')
-					.send({ query });
-				expect(res.status).toBe(200);
-				expect(res.body.data).toBeDefined();
-				expect(res.body.errors).toBeDefined();
-				expect(res.body.errors[0].extensions.code).toBe(
-					'UNAUTHENTICATED',
-				);
-				done();
-			});
 			it('Sign Up with an already used nickname should return 400', async done => {
 				const userWithAlreadyUsedNickname: User = userWithCorrectData;
 				const res = await server
