@@ -3,6 +3,13 @@ import { Request, Response } from 'express';
 import { User } from '../entity/User';
 import { validate, ValidationError } from 'class-validator';
 import { SendMail, Mail } from '../services/mailGunService';
+import { deleteImg, uploadImg } from '../services/s3Service';
+
+const imageUpload = uploadImg.single('file');
+
+interface CustomMulterFile extends Express.Multer.File {
+	location: string;
+}
 
 // TODO : create services to use graphQL also
 export default class UserController {
@@ -243,5 +250,84 @@ export default class UserController {
 			.catch(error => {
 				response.status(500).json(error.message);
 			});
+	};
+
+	// TODO: doc swagger
+	/**
+	 * @swagger
+	 * path:
+	 *  /user/upload-avatar:
+	 *    post:
+	 *      summary: Update avatar of user specified by uuid in body
+	 *      tags: [Users]
+	 *      requestBody:
+	 *        required: true
+	 *        content:
+	 *          application/json:
+	 *            schema:
+	 *              $ref: '#/components/schemas/RequestBodyUserUuid'
+	 *      parameters:
+	 *        - in: header
+	 *          name: Authorization
+	 *          description: Bearer + TOKEN
+	 *          schema:
+	 *            type: string
+	 *            format: token
+	 *          required: true
+	 *      responses:
+	 *        "200":
+	 *          description: User id updated
+	 *          content:
+	 *            application/json:
+	 *              schema:
+	 *                $ref: '#/components/schemas/ResponseUserWithAvatar'
+	 *        "422":
+	 *          description: Incorrect image data
+	 */
+	static uploadAvatar = (req: Request, res: Response): void => {
+		imageUpload(req, res, async (err: { message: any }) => {
+			if (err) {
+				console.log('ERROR in image uploading: ', err.message);
+
+				return res.status(422).send({
+					errors: [
+						{
+							title: 'Image Upload Error',
+							detail: err.message,
+						},
+					],
+				});
+			}
+
+			const { uuid } = req.body;
+
+			const userRepository: Repository<User> = getRepository(User);
+
+			const userToUpdate: User = new User();
+			userToUpdate.avatar = (req.file as CustomMulterFile).location; // location not present (forgottent?) in multer types
+
+			const errors: ValidationError[] = await validate(userToUpdate, {
+				skipMissingProperties: true,
+			});
+
+			if (errors.length > 0) {
+				res.status(400).send(errors);
+				return;
+			}
+
+			await userRepository
+				.update(uuid, { avatar: userToUpdate.avatar })
+				.then(async () => {
+					const userUpdated:
+						| User
+						| undefined = await userRepository.findOne(uuid);
+					console.log('user updated:');
+					console.log(userUpdated);
+					res.status(200).send(userUpdated);
+				})
+				.catch((error: { message: any }) => {
+					res.status(500).json(error.message);
+				});
+		});
 	};
 }

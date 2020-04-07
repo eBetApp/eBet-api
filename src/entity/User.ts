@@ -34,6 +34,7 @@ import * as bcrypt from 'bcryptjs';
  *              nickname: Bob
  *              email: bob@gmail.com
  *              password: bob1
+ *              avatar:
  *           meta:
  *            token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjRjMmQ1NDRhLTgwM2YtNDY2OC1iNGVkLTQxMGExZjQwZTU4NSIsIm5pY2tuYW1lIjoiZGVsZXRlMjIiLCJ
  *      ResponseArrayOfUsers:
@@ -43,21 +44,34 @@ import * as bcrypt from 'bcryptjs';
  *            nickname: Bob1
  *            email: bob1@gmail.com
  *            password: bob1
+ *            avatar:
  *          - uuid: 4c2d544a-803f-4668-b4ed-410a1f
  *            nickname: Bob2
  *            email: bob2@gmail.com
  *            password: bob2
+ *            avatar:
  *      ResponseUserSingle:
  *        example:
  *          uuid: 4c2d544a-803f-4668-b4ed-410a1f
  *          nickname: Bob1
  *          email: bob1@gmail.com
  *          password: bob1
+ *          avatar:
+ *      ResponseUserWithAvatar:
+ *        example:
+ *          uuid: 4c2d544a-803f-4668-b4ed-410a1f
+ *          nickname: Bob1
+ *          email: bob1@gmail.com
+ *          password: bob1
+ *          avatar:
  *      ResponseUserDeleted:
  *        example:
  *          nickname: Bob1
  *          email: bob1@gmail.com
  *          password: bob1
+ *      RequestBodyUserUuid:
+ *        example:
+ *          uuid: 4c2d544a-803f-4668-b4ed-410a1f
  */
 
 @Entity()
@@ -79,6 +93,9 @@ export class User {
 	@Length(4, 20)
 	@IsNotEmpty()
 	password!: string;
+
+	@Column('text', { nullable: true })
+	avatar?: string;
 
 	hashPassword(): void {
 		this.password = bcrypt.hashSync(this.password, 8);

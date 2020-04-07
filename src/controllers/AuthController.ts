@@ -9,6 +9,7 @@ import { User } from '../entity/User';
 import { SendMail, Mail } from '../services/mailGunService';
 import { signupService } from '../services/userAuthServices';
 
+// TODO: rename to RestController ??
 class AuthController {
 	/**
 	 * @swagger
@@ -80,6 +81,8 @@ class AuthController {
 			'local',
 			{ session: false },
 			async (err, user: User) => {
+				console.log('USER');
+				console.log(user);
 				if (err) {
 					res.status(400).json({
 						error: { message: err },
