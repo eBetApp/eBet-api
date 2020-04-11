@@ -284,8 +284,10 @@ export default class UserController {
 	 *          description: Incorrect image data
 	 */
 	static uploadAvatar = (
-		req: UploadAvatar_Request,
-		res: UploadAvatar_Response,
+		req: any,
+		res: any,
+		// req: UploadAvatar_Request,
+		// res: UploadAvatar_Response,
 	): void => {
 		imageUpload(req, res, async (err: { message: any }) => {
 			if (err) {
