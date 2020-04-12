@@ -3,13 +3,13 @@ import { Request, Response } from 'express';
 import { User } from '../entity/User';
 import { validate, ValidationError } from 'class-validator';
 import { SendMail, Mail } from '../services/mailGunService';
-import { deleteImg, uploadImg } from '../services/s3Service';
+import S3 from '../services/s3Service';
 import {
 	UploadAvatar_Request,
 	UploadAvatar_Response,
 } from './UserController.types';
 
-const imageUpload = uploadImg.single('file');
+const imageUpload = S3.uploadImg.single('file');
 
 export default class UserController {
 	/**
@@ -333,5 +333,16 @@ export default class UserController {
 					res.status(500).json(error.message);
 				});
 		});
+	};
+
+	static deleteAvatar = (req: Request, res: Response): Response => {
+		try {
+			S3.deleteImg(req.params.fileKey);
+			return res.status(200).json({
+				message: 'Success - Image deleted from S3 or not existing',
+			});
+		} catch (err) {
+			return res.status(500).json({ message: 'error', error: err.stack });
+		}
 	};
 }
