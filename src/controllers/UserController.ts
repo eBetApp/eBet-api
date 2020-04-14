@@ -335,8 +335,43 @@ export default class UserController {
 		});
 	};
 
+	/**
+	 * @swagger
+	 * path:
+	 *  /user/delete-avatar:
+	 *    delete:
+	 *      summary: Delete avatar from AWS S3 by id
+	 *      tags: [Users]
+	 *      parameters:
+	 *        - in: path
+	 *          name: Photo id
+	 *          schema:
+	 *            type: integer
+	 *          required: true
+	 *        - in: header
+	 *          name: Authorization
+	 *          description: Bearer + TOKEN
+	 *          schema:
+	 *            type: string
+	 *            format: token
+	 *          required: true
+	 *      responses:
+	 *        "200":
+	 *          description: Image correctly deleted
+	 *          content:
+	 *            application/json:
+	 *              message:
+	 *        "500":
+	 *          description: Image cannot be deleted
+	 *          content:
+	 *            application/json:
+	 *              message:
+	 */
 	static deleteAvatar = (req: Request, res: Response): Response => {
+		console.log('DELETE');
 		try {
+			console.log('params');
+			console.log(req.params);
 			S3.deleteImg(req.params.fileKey);
 			return res.status(200).json({
 				message: 'Success - Image deleted from S3 or not existing',
