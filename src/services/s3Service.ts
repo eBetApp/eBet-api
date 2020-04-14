@@ -16,7 +16,11 @@ const fileFilter = (
 	file: Express.Multer.File,
 	cb: FileFilterCallback,
 ) => {
-	if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+	if (
+		file.mimetype === 'image/jpeg' ||
+		file.mimetype === 'image/jpg' ||
+		file.mimetype === 'image/png'
+	) {
 		cb(null, true);
 	} else {
 		cb(new Error('Invalid file type, only JPEG and PNG is allowed!'));
@@ -51,9 +55,9 @@ const options: multer.Options = {
 	storage: multerS3(multerS3Options),
 };
 
-export const uploadImg = multer(options);
+const uploadImg = multer(options);
 
-export const deleteImg: (key: string) => Promise<void> = async imgKey => {
+const deleteImg: (key: string) => Promise<void> = async imgKey => {
 	s3.deleteObject(
 		{
 			Bucket: String(process.env.AWS_S3_BUCKET),
@@ -62,3 +66,5 @@ export const deleteImg: (key: string) => Promise<void> = async imgKey => {
 		function(err, data) {},
 	);
 };
+
+export default { uploadImg, deleteImg };

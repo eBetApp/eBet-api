@@ -59,19 +59,21 @@ import * as bcrypt from 'bcryptjs';
  *          avatar:
  *      ResponseUserWithAvatar:
  *        example:
- *          uuid: 4c2d544a-803f-4668-b4ed-410a1f
- *          nickname: Bob1
- *          email: bob1@gmail.com
- *          password: bob1
- *          avatar:
+ *          user:
+ *            uuid: 4c2d544a-803f-4668-b4ed-410a1f
+ *            nickname: Bob1
+ *            email: bob1@gmail.com
+ *            password: bob1
+ *            avatar:
  *      ResponseUserDeleted:
  *        example:
  *          nickname: Bob1
  *          email: bob1@gmail.com
  *          password: bob1
- *      RequestBodyUserUuid:
+ *      RequestBodyUserUpdateAvatar:
  *        example:
  *          uuid: 4c2d544a-803f-4668-b4ed-410a1f
+ *          file: FILE
  */
 
 @Entity()

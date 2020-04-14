@@ -3,15 +3,14 @@ import { Request, Response } from 'express';
 import { User } from '../entity/User';
 import { validate, ValidationError } from 'class-validator';
 import { SendMail, Mail } from '../services/mailGunService';
-import { deleteImg, uploadImg } from '../services/s3Service';
+import S3 from '../services/s3Service';
+import {
+	UploadAvatar_Request,
+	UploadAvatar_Response,
+} from './UserController.types';
 
-const imageUpload = uploadImg.single('file');
+const imageUpload = S3.uploadImg.single('file');
 
-interface CustomMulterFile extends Express.Multer.File {
-	location: string;
-}
-
-// TODO : create services to use graphQL also
 export default class UserController {
 	/**
 	 * @swagger
@@ -265,7 +264,7 @@ export default class UserController {
 	 *        content:
 	 *          application/json:
 	 *            schema:
-	 *              $ref: '#/components/schemas/RequestBodyUserUuid'
+	 *              $ref: '#/components/schemas/RequestBodyUserUpdateAvatar'
 	 *      parameters:
 	 *        - in: header
 	 *          name: Authorization
@@ -284,7 +283,12 @@ export default class UserController {
 	 *        "422":
 	 *          description: Incorrect image data
 	 */
-	static uploadAvatar = (req: Request, res: Response): void => {
+	static uploadAvatar = (
+		req: any,
+		res: any,
+		// req: UploadAvatar_Request,
+		// res: UploadAvatar_Response,
+	): void => {
 		imageUpload(req, res, async (err: { message: any }) => {
 			if (err) {
 				console.log('ERROR in image uploading: ', err.message);
@@ -304,7 +308,7 @@ export default class UserController {
 			const userRepository: Repository<User> = getRepository(User);
 
 			const userToUpdate: User = new User();
-			userToUpdate.avatar = (req.file as CustomMulterFile).location; // location not present (forgottent?) in multer types
+			userToUpdate.avatar = req.file.location;
 
 			const errors: ValidationError[] = await validate(userToUpdate, {
 				skipMissingProperties: true,
@@ -318,16 +322,62 @@ export default class UserController {
 			await userRepository
 				.update(uuid, { avatar: userToUpdate.avatar })
 				.then(async () => {
-					const userUpdated:
-						| User
-						| undefined = await userRepository.findOne(uuid);
+					const user: User | undefined = await userRepository.findOne(
+						uuid,
+					);
 					console.log('user updated:');
-					console.log(userUpdated);
-					res.status(200).send(userUpdated);
+					console.log(user);
+					res.status(200).send({ user });
 				})
 				.catch((error: { message: any }) => {
 					res.status(500).json(error.message);
 				});
 		});
+	};
+
+	/**
+	 * @swagger
+	 * path:
+	 *  /user/delete-avatar:
+	 *    delete:
+	 *      summary: Delete avatar from AWS S3 by id
+	 *      tags: [Users]
+	 *      parameters:
+	 *        - in: path
+	 *          name: Photo id
+	 *          schema:
+	 *            type: integer
+	 *          required: true
+	 *        - in: header
+	 *          name: Authorization
+	 *          description: Bearer + TOKEN
+	 *          schema:
+	 *            type: string
+	 *            format: token
+	 *          required: true
+	 *      responses:
+	 *        "200":
+	 *          description: Image correctly deleted
+	 *          content:
+	 *            application/json:
+	 *              message:
+	 *        "500":
+	 *          description: Image cannot be deleted
+	 *          content:
+	 *            application/json:
+	 *              message:
+	 */
+	static deleteAvatar = (req: Request, res: Response): Response => {
+		console.log('DELETE');
+		try {
+			console.log('params');
+			console.log(req.params);
+			S3.deleteImg(req.params.fileKey);
+			return res.status(200).json({
+				message: 'Success - Image deleted from S3 or not existing',
+			});
+		} catch (err) {
+			return res.status(500).json({ message: 'error', error: err.stack });
+		}
 	};
 }
