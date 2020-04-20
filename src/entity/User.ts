@@ -66,19 +66,23 @@ export class User {
 	@PrimaryGeneratedColumn('uuid')
 	uuid!: string;
 
-	@Column('text', { nullable: true })
+	@Column('text')
 	@IsNotEmpty()
 	nickname!: string;
 
-	@Column('text', { nullable: true })
+	@Column('text')
 	@IsNotEmpty()
 	@IsEmail()
 	email!: string;
 
-	@Column('text', { nullable: true })
+	@Column('text')
 	@Length(4, 20)
 	@IsNotEmpty()
 	password!: string;
+
+	@Column('date')
+	@IsNotEmpty()
+	birthDate!: Date;
 
 	hashPassword(): void {
 		this.password = bcrypt.hashSync(this.password, 8);

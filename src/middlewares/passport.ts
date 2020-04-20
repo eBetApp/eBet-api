@@ -8,24 +8,23 @@ require('dotenv').config();
 passport.use(
 	new LocalStrategy(
 		{
-			usernameField: 'nickname',
+			usernameField: 'email',
 			passwordField: 'password',
 		},
-		async (username, password, next) => {
+		async (email, password, next) => {
 			console.log('LOCAL strategy');
 			try {
 				const userRepository: Repository<User> = getRepository(User);
 				const user: User | undefined = await userRepository.findOne({
-					nickname: username,
+					email: email,
 				});
 
-				if (!user) throw new Error('User does not exist'); // status 400
+				if (!user) { return next(null, false); }
 
-				if (!user.checkIfUnencryptedPasswordIsValid(password)) {
-					throw new Error('Password does not match'); // status 400
-				}
+				if (!user.checkIfUnencryptedPasswordIsValid(password)) { return next(null, false); }
 				return next(false, user);
 			} catch (err) {
+				console.log('ERROR PASSPORT');
 				return next(err.message); // status 500
 			}
 		},

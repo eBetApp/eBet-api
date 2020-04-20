@@ -7,7 +7,7 @@ import { validate, ValidationError } from 'class-validator';
 import passport from 'passport';
 import { User } from '../entity/User';
 import { SendMail, Mail } from '../services/mailGunService';
-import { signupService } from '../services/userAuthServices';
+import { signupService, signinService } from '../services/userAuthServices';
 
 class AuthController {
 	/**
@@ -35,9 +35,9 @@ class AuthController {
 	 */
 
 	static signup = async (req: Request, res: Response): Promise<Response> => {
-		const { nickname, password, email } = req.body;
+		const { nickname, password, email, birthDate } = req.body;
 		try {
-			const result = await signupService(nickname, password, email);
+			const result = await signupService(nickname, password, email, birthDate);
 			return res.status(result.status).json(result);
 		} catch (error) {
 			return res.status(error.status).send(error.err);
@@ -70,32 +70,17 @@ class AuthController {
 	 */
 
 	// TODO: create service to use also graphQL
-	static signin = async (
-		req: Request,
-		res: Response,
-	): Promise<Response | void> => {
-		console.log('#SIGN IN');
-
-		passport.authenticate(
-			'local',
-			{ session: false },
-			async (err, user: User) => {
-				if (err) {
-					res.status(400).json({
-						error: { message: err },
-					});
-					return res.status(400);
-				}
-
-				const token: string = AuthController.setToken(user);
-
-				res.status(200).json({ data: { user }, meta: { token } });
-			},
-		)(req, res);
+	static signin = async (req: Request, res: Response): Promise<Response | void> => {
+		try {
+			const result = await signinService(req, res);
+			return res.status(result.status).json(result);
+		} catch (error) {
+			return res.status(error.status).send(error.err);
+		}
 	};
 
 	public static setToken(user: User): string {
-		const { uuid, nickname, email } = user;
+		const { uuid, nickname, email, birthDate } = user;
 		const payload = { uuid, nickname, email };
 		const token: string = jwt.sign(payload, process.env.SECRET as string);
 		return token;

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */ // TOD -> à mettre en global
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs';
+// import path from 'path';
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { getRepository, Repository } from 'typeorm';
+// import { getRepository, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import passport from 'passport';
 import { User } from '../entity/User';
@@ -32,11 +32,13 @@ export const signupService = async (
 	nickname: string,
 	password: string,
 	email: string,
+	birthDate: Date
 ): Promise<Result> => {
 	const user: User = new User();
 	user.nickname = nickname;
 	user.password = password;
 	user.email = email;
+	user.birthDate = birthDate;
 
 	let res: SuccesResult;
 	let err: ErrorResult;
@@ -57,29 +59,15 @@ export const signupService = async (
 		console.log('User created');
 		console.log(insertedUser);
 		const data: Mail = {
-			from: 'My S3 company <myS3Company@myS3Company.org>',
+			from: 'E-bet corporation <ebetcorporation@ebetcorporation.org>',
 			to: insertedUser.email,
 			subject: 'Subscription',
-			text: `Congratulations ${insertedUser.nickname}, you are now registered to MyS3!`,
+			text: `Congratulations ${insertedUser.nickname}, you are now registered to E-bet!`,
 		};
 
 		SendMail(data);
 
-		const userPath: string = path.join(
-			__dirname,
-			'../../myS3DATA',
-			insertedUser.uuid.toString(),
-		);
-		console.log(userPath);
-		if (!fs.existsSync(userPath)) {
-			fs.mkdir(userPath, () => {
-				console.log('bucke created');
-			});
-			// fs.mkdir(userPath, {recursive: true}, err => {})
-		}
-
-		const payload = { id: insertedUser.uuid, nickname, email };
-		const token: string = jwt.sign(payload, process.env.SECRET as string);
+		const token: string = setToken(insertedUser);
 
 		res = {
 			status: 201,
@@ -106,33 +94,39 @@ export const signupService = async (
 	);
 };
 
-export const signin = async (
-	req: Request,
-	res: Response,
-): Promise<Response | void> => {
-	console.log('#SIGN IN');
-
-	passport.authenticate(
-		'local',
-		{ session: false },
-		async (err, user: User) => {
-			if (err) {
-				res.status(400).json({
-					error: { message: err },
-				});
-				return res.status(400);
-			}
-
-			const token: string = setToken(user);
-
-			res.status(200).json({ data: { user }, meta: { token } });
-		},
-	)(req, res);
+export const signinService = async (req: Request, res: Response
+): Promise<Result> => {
+	let res2: SuccesResult;
+	let err: ErrorResult;
+	return new Promise(
+		(
+			resolve: (result: SuccesResult) => void,
+			reject: (result: ErrorResult) => void,
+		) => {
+			passport.authenticate('local', { session: false }, async (error, user) => {
+				if (!error) {
+					const token: string = setToken(user);
+					res2 = {
+						status: 201,
+						data: { user },
+						meta: { token },
+					};
+					resolve(res2);
+				} else {
+					err = {
+						status: 400,
+						err: error.message,
+					};
+					reject(err);
+				}
+			})(req, res);
+		}
+	);
 };
 
 export const setToken = (user: User): string => {
-	const { uuid, nickname, email } = user;
-	const payload = { uuid, nickname, email };
+	const { uuid, nickname, email, birthDate } = user;
+	const payload = { uuid, nickname, email, birthDate };
 	const token: string = jwt.sign(payload, process.env.SECRET as string);
 	return token;
 };

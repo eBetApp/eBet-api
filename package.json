@@ -23,12 +23,6 @@
 		"url": "https://github.com/eBetApp/eBet-api/issues"
 	},
 	"homepage": "https://github.com/eBetApp/eBet-api#readme",
-	"husky": {
-		"hooks": {
-			"pre-commit": "npm run pretty-quick --staged",
-			"pre-push": "npm run lint && npm run test"
-		}
-	},
 	"engines": {
 		"node": ">=12.7.x"
 	},
